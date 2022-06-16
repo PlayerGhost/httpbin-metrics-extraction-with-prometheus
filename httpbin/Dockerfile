@@ -19,4 +19,7 @@ RUN pip3 install --no-cache-dir /httpbin
 
 EXPOSE 80
 
-CMD ["gunicorn", "-b", "0.0.0.0:80", "httpbin:app", "-k", "gevent"]
+RUN apt-get install -y gunicorn
+RUN apt-get install -y python-gevent
+
+CMD ["gunicorn","--statsd-host=localhost:9125","--statsd-prefix=httpbin", "-b", "0.0.0.0:80", "httpbin:app", "-k", "gevent"]
