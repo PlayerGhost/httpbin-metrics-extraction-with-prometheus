@@ -6,6 +6,7 @@ pip3 install --no-cache-dir /httpbin
 
 gunicorn --statsd-host=localhost:9125 --statsd-prefix=helloworld --bind 127.0.0.1:8080 hello:app
 
-gunicorn -b 0.0.0.0:80 httpbin:app -k gevent
+gunicorn --statsd-host=localhost:9125 --statsd-prefix=helloworld -b 0.0.0.0:80 httpbin:app -k gevent
 
-docker run -dP --net=host -v ${PWD}/statsd.conf:/statsd/statsd.conf prom/statsd-exporter "-statsd.mapping-config=/statsd/statsd.conf"
+docker run -d -p 9125:9125 --net=host -v ${PWD}/statsd.conf:/statsd/statsd.conf "statsd.mapping-config=/statsd/statsd.conf" prom/statsd-exporter
+docker run -d -p 9125:9125 --net=host -v ${PWD}/statsd.conf:/statsd/statsd.conf prom/statsd-exporter
