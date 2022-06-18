@@ -1,0 +1,36 @@
+name: "nabor-prometheus"
+
+services:
+  statsd-exporter:
+    container_name: "statsd-exporter"
+    image: prom/statsd-exporter:v0.21.0
+    entrypoint: ["/bin/sh", "-c", "--"]
+    command: ["statsd_exporter --log.level debug --statsd.mapping-config=/home/statsd-mapping-configs.yaml"]
+    volumes:
+      - ./statsd.yaml:/home/statsd-mapping-configs.yaml
+    ports:
+      - 9102:9102   # Scrape port (porta pra expor pro prometheus)
+      - 9125:9125   # Ingest port (httpbin deve mandar pra ca)
+
+  httpbin:
+    image: kennethreitz/httpbin
+    entrypoint: ["/bin/sh", "-c", "--"]
+    command: [ "gunicorn --statsd-host=statsd-exporter:9125 --statsd-prefix=httpbin -b 0.0.0.0:80 httpbin:app -k gevent" ]
+    ports:
+      - 80:80
+    depends_on: [
+      statsd_exporter
+    ]
+  
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/prometheus.yml:/home/prometheus.yml
+    entrypoint: ["/bin/sh", "-c", "--"]
+    command: ["prometheus --config.file=/home/prometheus.yml"]
+    depends_on: [
+      statsd_exporter,
+      httpbin
+    ]
