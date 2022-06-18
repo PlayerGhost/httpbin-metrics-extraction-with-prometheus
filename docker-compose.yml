@@ -34,3 +34,17 @@ services:
       statsd_exporter,
       httpbin
     ]
+
+  grafana:
+    image: grafana/grafana:8.4.3
+    volumes:
+      - ./grafana/:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    depends_on: [
+      statsd_exporter,
+      httpbin,
+      prometheus
+    ]
+    ports:
+      - 3000:3000 # Porta padrão
